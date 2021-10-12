@@ -1,12 +1,19 @@
+import App from './App';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+import useAxios from 'axios-hooks';
 import reportWebVitals from './reportWebVitals';
+
+import 'bootstrap/dist/css/bootstrap.css';
+
+const Mocked = ({Component}) => {
+  const [{data: warehouses, loading, error}] = useAxios('http://localhost:1337/v1/warehouses');
+  return <Component {...{warehouses, loading, failed: error}}/>;
+};
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Mocked Component={App}/>
   </React.StrictMode>,
   document.getElementById('root')
 );
