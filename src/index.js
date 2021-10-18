@@ -1,14 +1,37 @@
 import App from './App';
 import React from 'react';
+import axios from 'axios';
+import {Fragment} from 'react';
 import ReactDOM from 'react-dom';
-import useAxios from 'axios-hooks';
+import {makeUseAxios} from 'axios-hooks';
+import Toast from 'react-bootstrap/Toast';
 import reportWebVitals from './reportWebVitals';
 
 import 'bootstrap/dist/css/bootstrap.css';
 
+const useAxios = makeUseAxios({
+  axios: axios.create({baseURL: 'http://localhost:1337/v1'})
+});
+
 const Mocked = ({Component}) => {
-  const [{data: warehouses, loading, error}] = useAxios('http://localhost:1337/v1/warehouses');
-  return <Component {...{warehouses, loading, failed: error}}/>;
+  const [{data: warehouses, loading, error}, startGet] = useAxios('/warehouses');
+  const [{loading: deleting, error: deleteError}, startDelete] = useAxios({
+    method: 'DELETE'
+  }, {manual: true});
+
+  const deleteWarehouse = warehouseId => startDelete({
+    url: `/warehouse/${warehouseId}`
+  }).then(() => startGet());
+  const toastMsg = deleteError && 'Warehouse deletion failed';
+
+  return (
+    <Fragment>
+      <Component {...{warehouses, loading, failed: error, deleteWarehouse, deleting}}/>
+      <Toast style={{position: 'fixed', top: '10px', right: '10px'}} show={toastMsg}>
+        <Toast.Body>{toastMsg}</Toast.Body>
+      </Toast>
+    </Fragment>
+  );
 };
 
 ReactDOM.render(

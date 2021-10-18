@@ -1,25 +1,30 @@
 import {Fragment} from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Table from 'react-bootstrap/Table';
+import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
+
+import './app.css';
 
 function App({
   warehouses = [],
   loading = false,
+  deleting = false,
   failed = false,
+  deleteWarehouse = warehouseId => Promise.reject(),
 }) {
   const tbody = () => {
-    if (failed) {
+    if (failed && !warehouses.length) {
       return (
         <tr>
-          <td colSpan="4"><Alert variant="danger">Error encountered while loading warehouses</Alert></td>
+          <td colSpan="5"><Alert variant="danger">Error encountered while loading warehouses</Alert></td>
         </tr>
       );
     }
-    if (warehouses.length === 0) {
+    if (warehouses.length === 0 && !loading) {
       return (
         <tr>
-          <td colSpan="4">No warehouses in system</td>
+          <td colSpan="5">No warehouses in system</td>
         </tr>
       );
     }
@@ -50,6 +55,9 @@ function App({
                 ${country}`}
             </address>
           </td>
+          <td>
+            <Button size="sm" variant="danger" onClick={e => deleteWarehouse(warehouseId)}>delete</Button>
+          </td>
         </tr>
       ));
     }
@@ -57,12 +65,17 @@ function App({
 
   return (
     <Fragment>
-      {loading && (
+      {((deleting || loading) && (warehouses.length > 0)) && (
+        <div style={{height: '100vh'}} className="backdrop d-flex align-items-sm-center justify-content-sm-center">
+          <Spinner animation="grow" size="lg" variant="info"/>
+        </div>
+      )}
+      {(loading && (warehouses.length === 0)) && (
         <div style={{height: '100vh'}} className="d-flex align-items-sm-center justify-content-sm-center">
           <Spinner animation="grow" size="lg" variant="info"/>
         </div>
       )}
-      {!loading && (
+      {(!loading || (warehouses.length > 0)) && (
         <Table bordered>
           <thead>
             <tr>
@@ -77,6 +90,9 @@ function App({
               </th>
               <th>
                 Address
+              </th>
+              <th>
+                Actions
               </th>
             </tr>
           </thead>
