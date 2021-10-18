@@ -21,7 +21,10 @@ const warehouses = Array(10).fill()
   .reduce((map, empty, index) => map.set(index + 1, warehouse(index + 1)), new Map());
 
 let resCount = 0;
+
 const everyOtherFail = (req, res, next)  => {
+  return next();
+
   resCount++;
 
   if (resCount === 1) {
@@ -40,6 +43,10 @@ app.delete('/v1/warehouse/:warehouseId', everyOtherFail, (req, res) => {
 });
 app.get('/v1/warehouses', everyOtherFail, (req, res) => {
   return setTimeout(() => res.json(Array.from(warehouses, ([, elem]) => elem)), 1500);
+  if (resCount === 2) {
+    resCount = 0;
+    return res.sendStatus(500);
+  }
 });
 
 app.listen(1337, () => console.log('listening'));
